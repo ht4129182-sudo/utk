@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { initializeDatabase } = require('../backend/database/init');
+const { initializeDatabase } = require('./backend/database/init');
 
 dotenv.config();
 
@@ -15,12 +15,12 @@ app.use(express.json());
 initializeDatabase();
 
 // Routes
-app.use('/api/auth', require('../backend/routes/auth'));
-app.use('/api/matches', require('../backend/routes/matches'));
-app.use('/api/bets', require('../backend/routes/bets'));
-app.use('/api/users', require('../backend/routes/users'));
-app.use('/api/transactions', require('../backend/routes/transactions'));
-app.use('/api/admin', require('../backend/routes/admin'));
+app.use('/api/auth', require('./backend/routes/auth'));
+app.use('/api/matches', require('./backend/routes/matches'));
+app.use('/api/bets', require('./backend/routes/bets'));
+app.use('/api/users', require('./backend/routes/users'));
+app.use('/api/transactions', require('./backend/routes/transactions'));
+app.use('/api/admin', require('./backend/routes/admin'));
 
 const PORT = process.env.PORT || 5000;
 

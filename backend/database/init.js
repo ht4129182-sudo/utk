@@ -74,6 +74,22 @@ function initializeDatabase() {
       )
     `);
 
+    // Sessions table for multi-device support
+    db.run(`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        token TEXT UNIQUE NOT NULL,
+        device_info TEXT,
+        ip_address TEXT,
+        user_agent TEXT,
+        last_active DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expires_at DATETIME NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
+
     // Create default admin if not exists
     db.get("SELECT * FROM users WHERE email = ?", ['admin@utkarsh.com'], async (err, row) => {
       if (!row) {
