@@ -11,7 +11,3 @@ services:
         value: utkarsh_toss_book_secret_key_2024
       - key: NODE_ENV
         value: production
-      - key: npm_config_legacy_peer_deps
-        value: true
-      - key: npm_config_engine_strict
-        value: false
