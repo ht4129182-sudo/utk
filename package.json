@@ -7,10 +7,11 @@
     "server": "cd backend && npm run dev",
     "client": "cd frontend && npm run dev",
     "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
-    "build": "npm install --legacy-peer-deps --engine-strict=false --no-audit --no-fund && cd backend && npm install --legacy-peer-deps --engine-strict=false --no-audit --no-fund && cd ../frontend && npm install --legacy-peer-deps --engine-strict=false --no-audit --no-fund && npm run build"
+    "build": "npm install --legacy-peer-deps && cd frontend && npm install --legacy-peer-deps && npm run build"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "vite": "^5.4.8"
   },
   "engines": {
     "node": "20.11.0"
