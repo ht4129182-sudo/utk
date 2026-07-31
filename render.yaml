@@ -2,7 +2,7 @@ services:
   - type: web
     name: utkarsh-toss-book
     env: node
-    buildCommand: npm install --legacy-peer-deps --engine-strict=false && cd backend && npm install --legacy-peer-deps --engine-strict=false && cd ../frontend && npm install --legacy-peer-deps --engine-strict=false && npm run build
+    buildCommand: npm run build
     startCommand: node backend/server.js
     envVars:
       - key: PORT
@@ -11,3 +11,7 @@ services:
         value: utkarsh_toss_book_secret_key_2024
       - key: NODE_ENV
         value: production
+      - key: npm_config_legacy_peer_deps
+        value: true
+      - key: npm_config_engine_strict
+        value: false

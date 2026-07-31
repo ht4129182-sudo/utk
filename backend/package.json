@@ -30,6 +30,8 @@
     "node-gyp": "^10.0.0",
     "http-proxy-agent": "^5.0.0",
     "https-proxy-agent": "^5.0.0",
-    "socks-proxy-agent": "^8.0.0"
+    "socks-proxy-agent": "^8.0.0",
+    "semver": "^7.5.4",
+    "jsonwebtoken": "^9.0.2"
   }
 }
