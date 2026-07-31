@@ -2,7 +2,6 @@
     "services": {
         "frontend": {
             "root": "frontend",
-            "srcDir": "src",
             "framework": "vite",
             "buildCommand": "npm install && npm run build",
             "outputDirectory": "dist"
