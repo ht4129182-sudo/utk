@@ -13,7 +13,7 @@
     "concurrently": "^8.2.2"
   },
   "engines": {
-    "node": "18.20.0"
+    "node": "20.11.0"
   },
   "overrides": {
     "tar": "^6.2.1",

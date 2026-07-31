@@ -14,5 +14,5 @@ services:
       - key: NODE_ENV
         value: production
       - key: NODE_VERSION
-        value: 18.20.0
+        value: 20.11.0
     healthCheckPath: /health
