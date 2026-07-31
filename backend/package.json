@@ -19,7 +19,7 @@
     "nodemon": "^3.0.1"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "18.20.0"
   },
   "overrides": {
     "tar": "^6.2.1",
