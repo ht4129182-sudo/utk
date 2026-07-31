@@ -34,7 +34,17 @@ export function AuthProvider({ children }) {
     return response.data
   }
 
-  const logout = () => {
+  const logout = async () => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      try {
+        await axios.post(`${API_URL}/auth/logout`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      } catch (error) {
+        console.error('Logout error:', error)
+      }
+    }
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setUser(null)
