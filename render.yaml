@@ -2,7 +2,9 @@ services:
   - type: web
     name: utkarsh-toss-book-api
     env: node
-    buildCommand: npm install --legacy-peer-deps --engine-strict=false --no-audit --no-fund && cd backend && npm install --legacy-peer-deps --engine-strict=false --no-audit --no-fund && cd ../frontend && npm install --legacy-peer-deps --engine-strict=false --no-audit --no-fund && npm run build
+    runtime: node
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
     startCommand: node backend/server.js
     envVars:
       - key: PORT
@@ -11,3 +13,6 @@ services:
         value: utkarsh_toss_book_secret_key_2024
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: 18.17.0
+    healthCheckPath: /health

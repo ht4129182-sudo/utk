@@ -14,7 +14,7 @@ app.use(express.json());
 
 // Health check endpoint for Render
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running' });
+  res.status(200).json({ status: 'ok', message: 'Server is running', timestamp: new Date().toISOString() });
 });
 
 // Initialize database
@@ -38,6 +38,12 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';
+
+// Increase timeout for Render
+app.server.timeout = 120000;
+app.server.keepAliveTimeout = 120000;
+
+app.listen(PORT, HOST, () => {
+  console.log(`Server running on http://${HOST}:${PORT}`);
 });
