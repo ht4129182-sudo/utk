@@ -2,12 +2,16 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const path = require('path');
 
-const dbPath = path.join(__dirname, '../../database.sqlite');
+// Use /tmp directory for Render compatibility
+const dbPath = process.env.NODE_ENV === 'production' 
+  ? '/tmp/database.sqlite' 
+  : path.join(__dirname, '../../database.sqlite');
+
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error opening database:', err);
   } else {
-    console.log('Connected to SQLite database');
+    console.log('Connected to SQLite database at:', dbPath);
   }
 });
 
