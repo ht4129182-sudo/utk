@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { LayoutDashboard, Trophy, Users, Wallet, History, Settings, LogOut, Menu, X, Plus, Search, ChevronDown } from 'lucide-react'
 
-const API_URL = 'http://localhost:5000/api'
+const API_URL = import.meta.env.VITE_API_URL || '/api'
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
