@@ -1,8 +1,8 @@
 services:
   - type: web
-    name: utkarsh-toss-book
+    name: utkarsh-toss-book-api
     env: node
-    buildCommand: npm run build
+    buildCommand: npm install --legacy-peer-deps --engine-strict=false --no-audit --no-fund && cd backend && npm install --legacy-peer-deps --engine-strict=false --no-audit --no-fund && cd ../frontend && npm install --legacy-peer-deps --engine-strict=false --no-audit --no-fund && npm run build
     startCommand: node backend/server.js
     envVars:
       - key: PORT
