@@ -24,7 +24,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat p-4 sm:p-8" style={{ backgroundImage: 'url(/background.jpg)', backgroundSize: 'cover', backgroundPosition: 'center 30%' }}>
+    <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat p-4 sm:p-8" style={{ backgroundImage: 'url(/background.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <div className="absolute inset-0 bg-gradient-to-br from-primary/70 via-secondary/70 to-primary/70" />
       <div className="relative bg-secondary/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 w-full max-w-md border-2 border-red/30 shadow-2xl shadow-red/20">
         <div className="text-center mb-6 sm:mb-8">

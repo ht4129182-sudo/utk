@@ -7,3 +7,8 @@ database.sqlite
 
 # Keep .env for configuration access
 # .env
+
+# Environment files
+.env.local
+.env.development
+.env.test
