@@ -1,135 +1,129 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
-const { db } = require('../database/init');
+const { query } = require('../database/init');
 
 // Get user profile
-router.get('/profile', authenticateToken, (req, res) => {
-  db.get("SELECT id, name, email, phone, balance, role, created_at FROM users WHERE id = ?", [req.user.id], (err, user) => {
-    if (err || !user) {
+router.get('/profile', authenticateToken, async (req, res) => {
+  try {
+    const result = await query("SELECT id, name, email, phone, balance, role, created_at FROM users WHERE id = $1", [req.user.id]);
+    const user = result.rows[0];
+    if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
     res.json(user);
-  });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
 });
 
 // Get all users (admin only)
-router.get('/all', authenticateToken, requireAdmin, (req, res) => {
-  db.all("SELECT id, name, email, phone, balance, role, created_at FROM users ORDER BY created_at DESC", [], (err, users) => {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to fetch users' });
-    }
-    res.json(users);
-  });
+router.get('/all', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await query("SELECT id, name, email, phone, balance, role, created_at FROM users ORDER BY created_at DESC");
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
 });
 
 // Add balance to user (admin only)
-router.post('/add-balance', authenticateToken, requireAdmin, (req, res) => {
-  const { user_id, amount } = req.body;
+router.post('/add-balance', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { user_id, amount } = req.body;
 
-  db.run("UPDATE users SET balance = balance + ? WHERE id = ?", [amount, user_id], function(err) {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to add balance' });
-    }
+    await query("UPDATE users SET balance = balance + $1 WHERE id = $2", [amount, user_id]);
 
     // Create transaction record
-    db.run(
-      "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, ?, ?, ?)",
+    await query(
+      "INSERT INTO transactions (user_id, type, amount, description) VALUES ($1, $2, $3, $4)",
       [user_id, 'credit', amount, 'Balance added by admin']
     );
 
     res.json({ message: 'Balance added successfully' });
-  });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add balance' });
+  }
 });
 
 // Subtract balance from user (admin only)
-router.post('/subtract-balance', authenticateToken, requireAdmin, (req, res) => {
-  const { user_id, amount } = req.body;
-
-  db.run("UPDATE users SET balance = balance - ? WHERE id = ?", [amount, user_id], function(err) {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to subtract balance' });
-    }
+    await query("UPDATE users SET balance = balance - $1 WHERE id = $2", [amount, user_id]);
 
     // Create transaction record
-    db.run(
-      "INSERT INTO transactions (user_id, type, amount, description) VALUES (?, ?, ?, ?)",
+    await query(
+      "INSERT INTO transactions (user_id, type, amount, description) VALUES ($1, $2, $3, $4)",
       [user_id, 'debit', amount, 'Balance deducted by admin']
     );
 
     res.json({ message: 'Balance subtracted successfully' });
-  });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to subtract balance' });
+  }
 });
 
 // Promote user to admin (admin only)
-router.post('/promote-admin', authenticateToken, requireAdmin, (req, res) => {
-  const { user_id } = req.body;
+router.post('/promote-admin', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { user_id } = req.body;
 
-  db.run("UPDATE users SET role = 'admin', balance = 999999999 WHERE id = ?", [user_id], function(err) {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to promote user' });
-    }
+    await query("UPDATE users SET role = 'admin', balance = 999999999 WHERE id = $1", [user_id]);
 
     res.json({ message: 'User promoted to admin successfully' });
-  });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to promote user' });
+  }
 });
 
 // Demote admin to user (admin only)
-router.post('/demote-admin', authenticateToken, requireAdmin, (req, res) => {
-  const { user_id } = req.body;
+router.post('/demote-admin', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { user_id } = req.body;
 
-  // Prevent demoting yourself
-  if (user_id === req.user.id) {
-    return res.status(400).json({ error: 'Cannot demote yourself' });
-  }
-
-  db.run("UPDATE users SET role = 'user', balance = balance WHERE id = ?", [user_id], function(err) {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to demote admin' });
+    // Prevent demoting yourself
+    if (user_id === req.user.id) {
+      return res.status(400).json({ error: 'Cannot demote yourself' });
     }
 
+    await query("UPDATE users SET role = 'user', balance = balance WHERE id = $1", [user_id]);
+
     res.json({ message: 'Admin demoted to user successfully' });
-  });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to demote admin' });
+  }
 });
 
 // Create new admin account (admin only)
 router.post('/create-admin', authenticateToken, requireAdmin, async (req, res) => {
-  const { name, email, password } = req.body;
-  const bcrypt = require('bcryptjs');
+  try {
+    const { name, email, password } = req.body;
+    const bcrypt = require('bcryptjs');
 
-  // Check if user exists
-  db.get("SELECT * FROM users WHERE email = ?", [email], async (err, user) => {
-    if (err) {
-      return res.status(500).json({ error: 'Database error' });
-    }
-    
-    if (user) {
+    // Check if user exists
+    const existingUser = await query("SELECT * FROM users WHERE email = $1", [email]);
+    if (existingUser.rows.length > 0) {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = bcrypt.hashSync(password, 10);
 
-    db.run(
-      "INSERT INTO users (name, email, password, role, balance) VALUES (?, ?, ?, ?, ?)",
-      [name, email, hashedPassword, 'admin', 999999999],
-      function(err) {
-        if (err) {
-          return res.status(500).json({ error: 'Failed to create admin' });
-        }
-
-        res.json({
-          message: 'Admin created successfully',
-          user: {
-            id: this.lastID,
-            name,
-            email,
-            role: 'admin',
-            balance: 999999999
-          }
-        });
-      }
+    const result = await query(
+      "INSERT INTO users (name, email, password, role, balance) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+      [name, email, hashedPassword, 'admin', 999999999]
     );
-  });
+
+    res.json({
+      message: 'Admin created successfully',
+      user: {
+        id: result.rows[0]?.id || result.lastId,
+        name,
+        email,
+        role: 'admin',
+        balance: 999999999
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create admin' });
+  }
 });
 
 module.exports = router;
