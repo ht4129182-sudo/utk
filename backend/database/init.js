@@ -3,16 +3,19 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 
-// Use Render persistent disk for production, local file for development
+// Database path configuration
 let dbPath;
 if (process.env.NODE_ENV === 'production') {
-  // Ensure Render data directory exists
+  // Try to use Render persistent disk if available
   const dataDir = '/opt/render/project/data';
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-    console.log('Created Render data directory:', dataDir);
+  if (fs.existsSync(dataDir)) {
+    dbPath = path.join(dataDir, 'database.sqlite');
+    console.log('Using Render persistent disk for database');
+  } else {
+    // Fallback to temp directory if persistent disk not available
+    dbPath = '/tmp/database.sqlite';
+    console.log('Using temp directory for database (data will reset on restart)');
   }
-  dbPath = path.join(dataDir, 'database.sqlite');
 } else {
   dbPath = path.join(__dirname, '../../database.sqlite');
 }
