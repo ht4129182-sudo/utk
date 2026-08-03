@@ -205,8 +205,12 @@ app.get('/debug/create-admin', (req, res) => {
   });
 });
 
-// Initialize database
-initializeDatabase();
+// Initialize database (async for PostgreSQL)
+initializeDatabase().then(() => {
+  console.log('Database initialization completed');
+}).catch(err => {
+  console.error('Database initialization failed:', err);
+});
 
 const PORT = process.env.PORT || 10000;
 const HOST = process.env.HOST || '0.0.0.0';
