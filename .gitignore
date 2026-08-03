@@ -1,14 +1,10 @@
-# No files hidden - all files accessible for public hosting
-# Keep database file
-database.sqlite
-
-# Keep node_modules for deployment reference
-# node_modules
-
-# Keep .env for configuration access
-# .env
-
-# Environment files
-.env.local
-.env.development
-.env.test
+node_modules/
+.env
+frontend/dist/
+frontend/.env
+backend/.env
+*.log
+.DS_Store
+.vercel/
+.netlify/
+.vercel
