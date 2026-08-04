@@ -1,0 +1,9 @@
+@echo off
+echo Staging all changes...
+git add .
+echo Committing changes...
+git commit -m "Auto-commit from script"
+echo Pushing to git...
+git push
+echo Done!
+pause
