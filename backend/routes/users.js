@@ -47,6 +47,10 @@ router.post('/add-balance', authenticateToken, requireAdmin, async (req, res) =>
 });
 
 // Subtract balance from user (admin only)
+router.post('/subtract-balance', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { user_id, amount } = req.body;
+
     await query("UPDATE users SET balance = balance - $1 WHERE id = $2", [amount, user_id]);
 
     // Create transaction record
