@@ -1,6 +1,6 @@
 @echo off
 echo ============================================
-echo   Auto Git Push and Render Deploy Script
+echo   UTKARSH TOSS BOOK - Auto Deploy Script
 echo ============================================
 echo.
 
@@ -37,7 +37,12 @@ echo ============================================
 echo   Successfully pushed to git!
 echo ============================================
 echo.
-echo IMPORTANT: Go to Render dashboard and click "Manual Deploy"
-echo Your service: https://dashboard.render.com/
+echo Backend URL: https://ut-0hem.onrender.com
+echo Frontend will need manual build/deploy
+echo.
+echo To deploy backend to Render:
+echo 1. Go to: https://dashboard.render.com/
+echo 2. Find service: ut-0hem
+echo 3. Click "Manual Deploy" -^> "Clear build cache ^& deploy"
 echo.
 pause
