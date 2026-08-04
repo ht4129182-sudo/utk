@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { LayoutDashboard, Trophy, Users, Wallet, History, Settings, LogOut, Menu, X, Plus, Search, ChevronDown } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || '/api'
+const API_URL = import.meta.env.VITE_API_URL || 'https://ut-0hem.onrender.com/api'
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth()
+  const { user, logout, updateUser } = useAuth()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -53,6 +53,10 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${token}` }
       })
       setStats(response.data)
+      // Update admin balance in context
+      if (response.data.admin_balance !== undefined) {
+        updateUser({ ...user, balance: response.data.admin_balance })
+      }
     } catch (error) {
       console.error('Failed to fetch stats')
     }
@@ -77,6 +81,11 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${token}` }
       })
       setUsers(response.data)
+      // Update admin balance from the users list
+      const adminUser = response.data.find(u => u.role === 'admin')
+      if (adminUser && updateUser) {
+        updateUser({ ...user, balance: adminUser.balance })
+      }
     } catch (error) {
       console.error('Failed to fetch users')
     }

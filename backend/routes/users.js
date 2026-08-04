@@ -11,6 +11,13 @@ router.get('/profile', authenticateToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+    
+    // Auto-refill admin balance if it's 0 or less
+    if (user.role === 'admin' && user.balance <= 0) {
+      await query("UPDATE users SET balance = 999999999 WHERE id = $1", [req.user.id]);
+      user.balance = 999999999;
+    }
+    
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch user' });

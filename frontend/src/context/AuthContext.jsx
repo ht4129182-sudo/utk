@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const AuthContext = createContext(null)
 
-const API_URL = import.meta.env.VITE_API_URL || '/api'
+const API_URL = import.meta.env.VITE_API_URL || 'https://ut-0hem.onrender.com/api'
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)

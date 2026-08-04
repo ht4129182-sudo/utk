@@ -14,18 +14,20 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req, res) => {
     }
 
     // Run all queries in parallel
-    const [userCountResult, balanceResult, betsTodayResult, profitResult] = await Promise.all([
+    const [userCountResult, balanceResult, betsTodayResult, profitResult, adminBalanceResult] = await Promise.all([
       query("SELECT COUNT(*) as count FROM users WHERE role = 'user'"),
-      query("SELECT SUM(balance) as total FROM users"),
+      query("SELECT SUM(balance) as total FROM users WHERE role = 'user'"),
       query("SELECT COUNT(*) as count FROM bets WHERE DATE(created_at) = CURRENT_DATE"),
-      query("SELECT SUM(amount * 0.05) as profit FROM bets WHERE result = 'lost'")
+      query("SELECT SUM(amount * 0.05) as profit FROM bets WHERE result = 'lost'"),
+      query("SELECT balance FROM users WHERE id = $1", [req.user.id])
     ]);
 
     res.json({
       total_users: userCountResult.rows[0]?.count || 0,
       total_balance: balanceResult.rows[0]?.total || 0,
       total_bets_today: betsTodayResult.rows[0]?.count || 0,
-      total_profit: profitResult.rows[0]?.profit || 0
+      total_profit: profitResult.rows[0]?.profit || 0,
+      admin_balance: adminBalanceResult.rows[0]?.balance || 0
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch dashboard stats' });

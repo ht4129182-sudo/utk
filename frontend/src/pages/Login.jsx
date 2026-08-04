@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://ut-0hem.onrender.com/api'
+
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -12,14 +14,22 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      const data = await login(email, password)
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Login failed')
+      
+      await login(email, password)
       if (data.user.role === 'admin') {
         navigate('/admin')
       } else {
         navigate('/dashboard')
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed')
+      setError(err.message || 'Login failed')
     }
   }
 

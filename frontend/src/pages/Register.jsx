@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://ut-0hem.onrender.com/api'
+
 export default function Register() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -14,10 +16,18 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, password })
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Registration failed')
+      
       await register(name, email, phone, password)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed')
+      setError(err.message || 'Registration failed')
     }
   }
 

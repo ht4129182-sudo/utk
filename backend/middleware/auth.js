@@ -31,7 +31,7 @@ async function authenticateToken(req, res, next) {
     await query("UPDATE sessions SET last_active = NOW() WHERE id = $1", [session.id]);
 
     req.user = {
-      id: session.id,
+      id: session.user_id,
       email: session.email,
       role: session.role,
       name: session.name
