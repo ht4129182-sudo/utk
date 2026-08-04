@@ -20,9 +20,6 @@ router.get('/profile', authenticateToken, async (req, res) => {
 // Get all users (admin only)
 router.get('/all', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    // Ensure admin balance is always unlimited
-    await query("UPDATE users SET balance = 999999999 WHERE role = 'admin'");
-    
     const result = await query("SELECT id, name, email, phone, balance, role, created_at FROM users ORDER BY created_at DESC");
     res.json(result.rows);
   } catch (error) {
@@ -35,13 +32,23 @@ router.post('/add-balance', authenticateToken, requireAdmin, async (req, res) =>
   try {
     const { user_id, amount } = req.body;
 
+    // Deduct from admin balance
+    await query("UPDATE users SET balance = balance - $1 WHERE id = $2", [amount, req.user.id]);
+
+    // Add to user balance
     await query("UPDATE users SET balance = balance + $1 WHERE id = $2", [amount, user_id]);
 
-    // Create transaction record
+    // Create transaction record for user
     await query(
       "INSERT INTO transactions (user_id, type, amount, description) VALUES ($1, $2, $3, $4)",
       [user_id, 'credit', amount, 'Balance added by admin']
     );
+
+    // Check if admin balance reached 0, if so make it unlimited again
+    const adminResult = await query("SELECT balance FROM users WHERE id = $1", [req.user.id]);
+    if (adminResult.rows.length > 0 && adminResult.rows[0].balance <= 0) {
+      await query("UPDATE users SET balance = 999999999 WHERE id = $1", [req.user.id]);
+    }
 
     res.json({ message: 'Balance added successfully' });
   } catch (error) {
@@ -53,12 +60,6 @@ router.post('/add-balance', authenticateToken, requireAdmin, async (req, res) =>
 router.post('/subtract-balance', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { user_id, amount } = req.body;
-
-    // Prevent subtracting from admin accounts
-    const userResult = await query("SELECT role FROM users WHERE id = $1", [user_id]);
-    if (userResult.rows.length > 0 && userResult.rows[0].role === 'admin') {
-      return res.status(400).json({ error: 'Cannot subtract balance from admin accounts' });
-    }
 
     await query("UPDATE users SET balance = balance - $1 WHERE id = $2", [amount, user_id]);
 

@@ -119,13 +119,6 @@ app.post('/api/auth/login', (req, res) => {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    // Ensure admin has unlimited balance
-    if (user.role === 'admin') {
-      db.run("UPDATE users SET balance = 999999999 WHERE id = ?", [user.id], (err) => {
-        if (err) console.error('Error updating admin balance:', err);
-      });
-    }
-
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET || 'default-secret',

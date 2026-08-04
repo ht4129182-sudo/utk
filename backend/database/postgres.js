@@ -110,9 +110,7 @@ async function initializePostgresDatabase() {
       );
       console.log('✅ Default admin created in PostgreSQL');
     } else {
-      // Ensure existing admin has unlimited balance
-      await pool.query("UPDATE users SET balance = 999999999 WHERE email = $1", ['admin@utkarsh.com']);
-      console.log('✅ Admin balance updated to unlimited in PostgreSQL');
+      console.log('Admin user already exists in PostgreSQL');
     }
 
     console.log('✅ PostgreSQL database initialized successfully');

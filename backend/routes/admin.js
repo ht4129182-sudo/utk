@@ -6,6 +6,13 @@ const { query } = require('../database/init');
 // Get dashboard stats
 router.get('/dashboard', authenticateToken, requireAdmin, async (req, res) => {
   try {
+    // Check if admin balance is 0 or less, refill to unlimited
+    const adminResult = await query("SELECT balance FROM users WHERE id = $1", [req.user.id]);
+    if (adminResult.rows.length > 0 && adminResult.rows[0].balance <= 0) {
+      await query("UPDATE users SET balance = 999999999 WHERE id = $1", [req.user.id]);
+      console.log('Admin balance refilled to unlimited');
+    }
+
     // Run all queries in parallel
     const [userCountResult, balanceResult, betsTodayResult, profitResult] = await Promise.all([
       query("SELECT COUNT(*) as count FROM users WHERE role = 'user'"),
