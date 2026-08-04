@@ -20,6 +20,9 @@ router.get('/profile', authenticateToken, async (req, res) => {
 // Get all users (admin only)
 router.get('/all', authenticateToken, requireAdmin, async (req, res) => {
   try {
+    // Ensure admin balance is always unlimited
+    await query("UPDATE users SET balance = 999999999 WHERE role = 'admin'");
+    
     const result = await query("SELECT id, name, email, phone, balance, role, created_at FROM users ORDER BY created_at DESC");
     res.json(result.rows);
   } catch (error) {
@@ -50,6 +53,12 @@ router.post('/add-balance', authenticateToken, requireAdmin, async (req, res) =>
 router.post('/subtract-balance', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { user_id, amount } = req.body;
+
+    // Prevent subtracting from admin accounts
+    const userResult = await query("SELECT role FROM users WHERE id = $1", [user_id]);
+    if (userResult.rows.length > 0 && userResult.rows[0].role === 'admin') {
+      return res.status(400).json({ error: 'Cannot subtract balance from admin accounts' });
+    }
 
     await query("UPDATE users SET balance = balance - $1 WHERE id = $2", [amount, user_id]);
 
