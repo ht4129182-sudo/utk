@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const helmet = require('helmet');
 const { initializeDatabase } = require('./database/init');
 const path = require('path');
 
@@ -8,9 +9,17 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP for now to allow frontend
+  crossOriginEmbedderPolicy: false
+}));
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Load routes first
 const authRoutes = require('./routes/auth');
@@ -166,6 +175,17 @@ console.log('All routes loaded successfully');
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running', timestamp: new Date().toISOString() });
 });
+
+// Rate limiting to prevent abuse
+const rateLimit = require('express-rate-limit');
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/', limiter);
 
 // Debug endpoint to check database status
 app.get('/debug/users', (req, res) => {

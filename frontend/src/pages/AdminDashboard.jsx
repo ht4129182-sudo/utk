@@ -537,7 +537,9 @@ export default function AdminDashboard() {
                         <td className="px-4 py-3 text-white">U{String(u.id).padStart(4, '0')}</td>
                         <td className="px-4 py-3 text-white">{u.name}</td>
                         <td className="px-4 py-3 text-white">{u.phone || '-'}</td>
-                        <td className="px-4 py-3 text-gold font-black">₹ {u.balance.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-gold font-black">
+                          {u.role === 'admin' ? 'UNLIMITED' : `₹ ${u.balance.toFixed(2)}`}
+                        </td>
                         <td className="px-4 py-3">
                           <button
                             onClick={() => { setSelectedUser(u); setShowAddBalance(true); setBalanceAction('add') }}
@@ -742,7 +744,9 @@ export default function AdminDashboard() {
                             {u.role.toUpperCase()}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-gold font-black">₹ {u.balance.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-gold font-black">
+                          {u.role === 'admin' ? 'UNLIMITED' : `₹ ${u.balance.toFixed(2)}`}
+                        </td>
                         <td className="px-4 py-3">
                           {u.role === 'user' ? (
                             <button

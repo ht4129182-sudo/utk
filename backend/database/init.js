@@ -53,7 +53,13 @@ async function query(sql, params = []) {
 
 async function initializeDatabase() {
   if (usePostgres) {
-    await initializePostgresDatabase();
+    try {
+      await initializePostgresDatabase();
+      console.log('✅ PostgreSQL database initialized successfully');
+    } catch (error) {
+      console.error('❌ PostgreSQL initialization failed:', error);
+      throw error;
+    }
   } else {
     // SQLite initialization
     let dbPath;
@@ -64,7 +70,7 @@ async function initializeDatabase() {
         console.log('Using Render persistent disk for database');
       } else {
         dbPath = '/tmp/database.sqlite';
-        console.log('Using temp directory for database (data will reset on restart)');
+        console.log('⚠️ Using temp directory for database (data will reset on restart)');
       }
     } else {
       dbPath = path.join(__dirname, '../../database.sqlite');
@@ -72,14 +78,15 @@ async function initializeDatabase() {
 
     db = new sqlite3.Database(dbPath, (err) => {
       if (err) {
-        console.error('Error connecting to database:', err);
+        console.error('❌ Error connecting to SQLite database:', err);
+        throw err;
       } else {
-        console.log('Connected to SQLite database at:', dbPath);
+        console.log('✅ Connected to SQLite database at:', dbPath);
       }
     });
 
     // Users table
-    db.exec(`
+    db.run(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -90,10 +97,16 @@ async function initializeDatabase() {
         role TEXT DEFAULT 'user',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
-    `);
+    `, (err) => {
+      if (err) {
+        console.error('❌ Error creating users table:', err);
+      } else {
+        console.log('✅ Users table created/verified');
+      }
+    });
 
     // Matches table
-    db.exec(`
+    db.run(`
       CREATE TABLE IF NOT EXISTS matches (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         team_a TEXT NOT NULL,
@@ -108,10 +121,13 @@ async function initializeDatabase() {
         toss_winner TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
-    `);
+    `, (err) => {
+      if (err) console.error('❌ Error creating matches table:', err);
+      else console.log('✅ Matches table created/verified');
+    });
 
     // Bets table
-    db.exec(`
+    db.run(`
       CREATE TABLE IF NOT EXISTS bets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -124,10 +140,13 @@ async function initializeDatabase() {
         FOREIGN KEY (user_id) REFERENCES users(id),
         FOREIGN KEY (match_id) REFERENCES matches(id)
       )
-    `);
+    `, (err) => {
+      if (err) console.error('❌ Error creating bets table:', err);
+      else console.log('✅ Bets table created/verified');
+    });
 
     // Transactions table
-    db.exec(`
+    db.run(`
       CREATE TABLE IF NOT EXISTS transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -137,10 +156,13 @@ async function initializeDatabase() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id)
       )
-    `);
+    `, (err) => {
+      if (err) console.error('❌ Error creating transactions table:', err);
+      else console.log('✅ Transactions table created/verified');
+    });
 
     // Sessions table
-    db.exec(`
+    db.run(`
       CREATE TABLE IF NOT EXISTS sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -153,7 +175,10 @@ async function initializeDatabase() {
         expires_at DATETIME NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users(id)
       )
-    `);
+    `, (err) => {
+      if (err) console.error('❌ Error creating sessions table:', err);
+      else console.log('✅ Sessions table created/verified');
+    });
 
     // Create default admin if not exists
     db.get("SELECT * FROM users WHERE email = ?", ['admin@utkarsh.com'], (err, admin) => {
@@ -184,7 +209,7 @@ async function initializeDatabase() {
       }
     });
 
-    console.log('Database initialized');
+    console.log('✅ SQLite database initialized successfully');
   }
 }
 
