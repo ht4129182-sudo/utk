@@ -38,11 +38,16 @@ echo   Successfully pushed to git!
 echo ============================================
 echo.
 echo Backend URL: https://ut-0hem.onrender.com
-echo Frontend will need manual build/deploy
 echo.
-echo To deploy backend to Render:
+echo IMPORTANT: Set environment variables in Render:
 echo 1. Go to: https://dashboard.render.com/
 echo 2. Find service: ut-0hem
-echo 3. Click "Manual Deploy" -^> "Clear build cache ^& deploy"
+echo 3. Go to Settings -^> Environment
+echo 4. Add these variables:
+echo    - NODE_ENV: production
+echo    - PORT: 10000
+echo    - JWT_SECRET: utkarsh-toss-book-super-secret-key-change-in-production-2024
+echo    - FRONTEND_URL: https://ut-0hem.onrender.com
+echo 5. Click "Manual Deploy" -^> "Clear build cache ^& deploy"
 echo.
 pause
