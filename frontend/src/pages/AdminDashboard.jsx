@@ -53,10 +53,8 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${token}` }
       })
       setStats(response.data)
-      // Update admin balance in context
-      if (response.data.admin_balance !== undefined) {
-        updateUser({ ...user, balance: response.data.admin_balance })
-      }
+      // Admin always has unlimited coins
+      updateUser({ ...user, balance: 999999999 })
     } catch (error) {
       console.error('Failed to fetch stats')
     }
@@ -81,11 +79,8 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${token}` }
       })
       setUsers(response.data)
-      // Update admin balance from the users list
-      const adminUser = response.data.find(u => u.role === 'admin')
-      if (adminUser && updateUser) {
-        updateUser({ ...user, balance: adminUser.balance })
-      }
+      // Admin always has unlimited coins
+      updateUser({ ...user, balance: 999999999 })
     } catch (error) {
       console.error('Failed to fetch users')
     }

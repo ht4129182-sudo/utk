@@ -176,10 +176,10 @@ async function initializeDatabase() {
           }
         );
       } else {
-        // Ensure existing admin has unlimited balance
+        // Ensure existing admin has unlimited coins
         db.run("UPDATE users SET balance = 999999999 WHERE email = 'admin@utkarsh.com'", (err) => {
           if (err) console.error('Error updating admin balance:', err);
-          else console.log('Admin balance updated to unlimited');
+          else console.log('Admin balance set to unlimited');
         });
       }
     });

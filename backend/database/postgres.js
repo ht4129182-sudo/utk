@@ -108,9 +108,11 @@ async function initializePostgresDatabase() {
         "INSERT INTO users (name, email, password, role, balance) VALUES ($1, $2, $3, $4, $5)",
         ['Admin', 'admin@utkarsh.com', hashedPassword, 'admin', 999999999]
       );
-      console.log('✅ Default admin created in PostgreSQL');
+      console.log('✅ Default admin created with unlimited coins in PostgreSQL');
     } else {
-      console.log('Admin user already exists in PostgreSQL');
+      // Ensure existing admin has unlimited coins
+      await pool.query("UPDATE users SET balance = 999999999 WHERE email = $1", ['admin@utkarsh.com']);
+      console.log('✅ Admin balance set to unlimited in PostgreSQL');
     }
 
     console.log('✅ PostgreSQL database initialized successfully');

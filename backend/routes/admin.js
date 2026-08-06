@@ -6,20 +6,15 @@ const { query } = require('../database/init');
 // Get dashboard stats
 router.get('/dashboard', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    // Check if admin balance is 0 or less, refill to unlimited
-    const adminResult = await query("SELECT balance FROM users WHERE id = $1", [req.user.id]);
-    if (adminResult.rows.length > 0 && adminResult.rows[0].balance <= 0) {
-      await query("UPDATE users SET balance = 999999999 WHERE id = $1", [req.user.id]);
-      console.log('Admin balance refilled to unlimited');
-    }
+    // Ensure admin has unlimited coins
+    await query("UPDATE users SET balance = 999999999 WHERE id = $1", [req.user.id]);
 
     // Run all queries in parallel
-    const [userCountResult, balanceResult, betsTodayResult, profitResult, adminBalanceResult] = await Promise.all([
+    const [userCountResult, balanceResult, betsTodayResult, profitResult] = await Promise.all([
       query("SELECT COUNT(*) as count FROM users WHERE role = 'user'"),
       query("SELECT SUM(balance) as total FROM users WHERE role = 'user'"),
       query("SELECT COUNT(*) as count FROM bets WHERE DATE(created_at) = CURRENT_DATE"),
-      query("SELECT SUM(amount * 0.05) as profit FROM bets WHERE result = 'lost'"),
-      query("SELECT balance FROM users WHERE id = $1", [req.user.id])
+      query("SELECT SUM(amount * 0.05) as profit FROM bets WHERE result = 'lost'")
     ]);
 
     res.json({
@@ -27,7 +22,7 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req, res) => {
       total_balance: balanceResult.rows[0]?.total || 0,
       total_bets_today: betsTodayResult.rows[0]?.count || 0,
       total_profit: profitResult.rows[0]?.profit || 0,
-      admin_balance: adminBalanceResult.rows[0]?.balance || 0
+      admin_balance: 999999999
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch dashboard stats' });

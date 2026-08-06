@@ -12,10 +12,10 @@ router.get('/profile', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    // Auto-refill admin balance if it's 0 or less
-    if (user.role === 'admin' && user.balance <= 0) {
-      await query("UPDATE users SET balance = 999999999 WHERE id = $1", [req.user.id]);
+    // Admin has unlimited coins
+    if (user.role === 'admin') {
       user.balance = 999999999;
+      await query("UPDATE users SET balance = 999999999 WHERE id = $1", [req.user.id]);
     }
     
     res.json(user);
@@ -27,8 +27,20 @@ router.get('/profile', authenticateToken, async (req, res) => {
 // Get all users (admin only)
 router.get('/all', authenticateToken, requireAdmin, async (req, res) => {
   try {
+    // Ensure admin has unlimited coins
+    await query("UPDATE users SET balance = 999999999 WHERE id = $1", [req.user.id]);
+    
     const result = await query("SELECT id, name, email, phone, balance, role, created_at FROM users ORDER BY created_at DESC");
-    res.json(result.rows);
+    
+    // Set admin balance to unlimited in response
+    const users = result.rows.map(user => {
+      if (user.role === 'admin') {
+        user.balance = 999999999;
+      }
+      return user;
+    });
+    
+    res.json(users);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch users' });
   }
@@ -39,10 +51,7 @@ router.post('/add-balance', authenticateToken, requireAdmin, async (req, res) =>
   try {
     const { user_id, amount } = req.body;
 
-    // Deduct from admin balance
-    await query("UPDATE users SET balance = balance - $1 WHERE id = $2", [amount, req.user.id]);
-
-    // Add to user balance
+    // Add to user balance (admin coins are unlimited, no deduction)
     await query("UPDATE users SET balance = balance + $1 WHERE id = $2", [amount, user_id]);
 
     // Create transaction record for user
@@ -50,12 +59,6 @@ router.post('/add-balance', authenticateToken, requireAdmin, async (req, res) =>
       "INSERT INTO transactions (user_id, type, amount, description) VALUES ($1, $2, $3, $4)",
       [user_id, 'credit', amount, 'Balance added by admin']
     );
-
-    // Check if admin balance reached 0, if so make it unlimited again
-    const adminResult = await query("SELECT balance FROM users WHERE id = $1", [req.user.id]);
-    if (adminResult.rows.length > 0 && adminResult.rows[0].balance <= 0) {
-      await query("UPDATE users SET balance = 999999999 WHERE id = $1", [req.user.id]);
-    }
 
     res.json({ message: 'Balance added successfully' });
   } catch (error) {
